@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>나만의 도서관</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1470&q=80');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      color: white;
+    }
+    form {
+      background-color: rgba(0, 0, 0, 0.6);
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 500px;
+      margin: 100px auto;
+      color: white;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 8px 10px;
+      margin-top: 6px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-size: 16px;
+      background-color: white;
+      color: black;
+    }
+    button {
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 15px;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #357ABD;
+    }
+  </style>
+</head>
+<body>
+  <h1>📚 책 추가하기</h1>
+
+  <form id="bookForm">
+    <label>책 제목: <input type="text" id="title" required /></label>
+    <label>작가: <input type="text" id="author" required /></label>
+    <label>줄거리:<br />
+      <textarea id="summary" required></textarea>
+    </label>
+    <button type="submit">책 저장하고 도서관으로 가기</button>
+  </form>
+
+  <script>
+    document.getElementById("bookForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const title = document.getElementById("title").value.trim();
+      const author = document.getElementById("author").value.trim();
+      const summary = document.getElementById("summary").value.trim();
+
+      if (!title || !author || !summary) {
+        alert("모든 항목을 입력해주세요!");
+        return;
+      }
+
+      const book = {
+        title,
+        author,
+        summary,
+        rating: null,
+        favorite: false
+      };
+
+      const books = JSON.parse(localStorage.getItem("books") || "[]");
+      books.push(book);
+      localStorage.setItem("books", JSON.stringify(books));
+
+      window.location.href = "library.html";
+    });
+  </script>
+</body>
+</html>

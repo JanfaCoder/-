@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>나만의 도서관</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-image: url('https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=1470&q=80');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      color: white;
+      padding: 20px;
+    }
+
+    #library {
+      background-color: rgba(0, 0, 0, 0.6);
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 700px;
+      margin: 20px auto;
+      color: white;
+    }
+
+    h2 {
+      margin-top: 0;
+      text-align: center;
+    }
+
+    .book {
+      border-bottom: 1px solid #aaa;
+      padding: 10px 0;
+    }
+
+    h3, p {
+      color: #f0f0f0;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+      margin: 5px 0;
+    }
+
+    button, select {
+      font-size: 16px;
+      margin-top: 5px;
+    }
+
+    button.favoriteBtn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 24px;
+      vertical-align: middle;
+      margin-left: 10px;
+    }
+
+    button.deleteBtn {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+
+    button.deleteBtn:hover {
+      background-color: #c0392b;
+    }
+
+    /* 책 추가하기 버튼 스타일 */
+    #addBookBtn {
+      display: block;
+      margin: 0 auto 20px auto;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #4a90e2;
+      color: white;
+      border: none;
+      max-width: 200px;
+      text-align: center;
+    }
+
+    #addBookBtn:hover {
+      background: #357ABD;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 책 추가하기 버튼 -->
+  <button id="addBookBtn" onclick="location.href='index.html'">➕ 책 추가하기</button>
+
+  <div id="library"></div>
+
+  <script>
+    const books = JSON.parse(localStorage.getItem("books") || "[]");
+    const libraryDiv = document.getElementById("library");
+
+    // 읽은 책 권수 표시
+    const countDiv = document.createElement("h2");
+    countDiv.textContent = `총 ${books.length}권의 책이 있습니다 📚`;
+    libraryDiv.appendChild(countDiv);
+
+    // 삭제 모드 버튼
+    const deleteModeBtn = document.createElement("button");
+    deleteModeBtn.textContent = "🗑️ 삭제 모드 켜기";
+    deleteModeBtn.style.display = "block";
+    deleteModeBtn.style.margin = "10px auto 20px auto";
+    libraryDiv.appendChild(deleteModeBtn);
+
+    let deleteMode = false;
+
+    function renderBooks() {
+      // 기존 책 리스트 지우기
+      document.querySelectorAll(".book").forEach(el => el.remove());
+
+      books.forEach((book, index) => {
+        const bookDiv = document.createElement("div");
+        bookDiv.className = "book";
+
+        const summaryId = `summary-${index}`;
+
+        bookDiv.innerHTML = `
+          <h3>
+            ${book.title}
+            <button class="favoriteBtn" data-index="${index}">
+              ${book.favorite ? "❤️" : "🤍"}
+            </button>
+          </h3>
+          <p><strong>작가:</strong> ${book.author}</p>
+          <p>
+            <button class="toggleSummaryBtn" data-id="${summaryId}">📖 줄거리 보기</button>
+            <div id="${summaryId}" class="summary" style="display:none; margin-top:5px;">
+              ${book.summary}
+            </div>
+          </p>
+          <p>
+            <strong>평점:</strong>
+            <select data-index="${index}">
+              <option value="">-- 선택 --</option>
+              <option value="1" ${book.rating == 1 ? "selected" : ""}>⭐</option>
+              <option value="2" ${book.rating == 2 ? "selected" : ""}>⭐⭐</option>
+              <option value="3" ${book.rating == 3 ? "selected" : ""}>⭐⭐⭐</option>
+              <option value="4" ${book.rating == 4 ? "selected" : ""}>⭐⭐⭐⭐</option>
+              <option value="5" ${book.rating == 5 ? "selected" : ""}>⭐⭐⭐⭐⭐</option>
+            </select>
+            ${deleteMode ? `<button class="deleteBtn" data-index="${index}">삭제</button>` : ""}
+          </p>
+        `;
+
+        libraryDiv.appendChild(bookDiv);
+      });
+
+      // 평점 이벤트
+      document.querySelectorAll("select").forEach(select => {
+        select.addEventListener("change", function() {
+          const idx = this.getAttribute("data-index");
+          books[idx].rating = parseInt(this.value);
+          localStorage.setItem("books", JSON.stringify(books));
+        });
+      });
+
+      // 줄거리 보기/숨기기
+      document.querySelectorAll(".toggleSummaryBtn").forEach(btn => {
+        btn.addEventListener("click", function() {
+          const targetId = this.getAttribute("data-id");
+          const summaryDiv = document.getElementById(targetId);
+          if (summaryDiv.style.display === "none") {
+            summaryDiv.style.display = "block";
+            this.textContent = "🙈 줄거리 숨기기";
+          } else {
+            summaryDiv.style.display = "none";
+            this.textContent = "📖 줄거리 보기";
+          }
+        });
+      });
+
+      // 삭제 버튼 이벤트
+      document.querySelectorAll(".deleteBtn").forEach(btn => {
+        btn.addEventListener("click", function() {
+          const idx = this.getAttribute("data-index");
+          books.splice(idx, 1);
+          localStorage.setItem("books", JSON.stringify(books));
+          renderBooks();
+          countDiv.textContent = `총 ${books.length}권의 책이 있습니다 📚`;
+        });
+      });
+
+      // 즐겨찾기 버튼 이벤트
+      document.querySelectorAll(".favoriteBtn").forEach(btn => {
+        btn.addEventListener("click", function() {
+          const idx = this.getAttribute("data-index");
+          books[idx].favorite = !books[idx].favorite;
+          localStorage.setItem("books", JSON.stringify(books));
+          renderBooks();
+        });
+      });
+    }
+
+    // 삭제 모드 토글
+    deleteModeBtn.addEventListener("click", () => {
+      deleteMode = !deleteMode;
+      deleteModeBtn.textContent = deleteMode ? "❌ 삭제 모드 끄기" : "🗑️ 삭제 모드 켜기";
+      renderBooks();
+    });
+
+    // 초기 렌더링
+    renderBooks();
+  </script>
+</body>
+</html>
